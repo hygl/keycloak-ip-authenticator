@@ -2,7 +2,7 @@ version: '3'
 services:
   keycloak:
     container_name: keycloak
-    image: summit/keycloak-ip-authenticator
+    image: summit/keycloak-ip-authenticator:latest
     environment:
       KEYCLOAK_USER: admin
       KEYCLOAK_PASSWORD: admin
