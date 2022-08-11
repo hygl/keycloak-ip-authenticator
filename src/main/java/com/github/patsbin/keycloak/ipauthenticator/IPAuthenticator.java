@@ -8,6 +8,7 @@ import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.models.*;
 import org.keycloak.models.credential.OTPCredentialModel;
+import org.springframework.util.StringUtils;
 
 public class IPAuthenticator implements Authenticator {
 
@@ -21,10 +22,27 @@ public class IPAuthenticator implements Authenticator {
         UserModel user = context.getUser();
 
         String remoteIPAddress = context.getConnection().getRemoteAddr();
-        String allowedIPAddress = getAllowedIPAddress(context);
-
-        if (!allowedIPAddress.equals(remoteIPAddress)) {
-            logger.infof("IPs do not match. Realm %s expected %s but user %s logged from %s", realm.getName(), allowedIPAddress, user.getUsername(), remoteIPAddress);
+        String allowedIPAddresses = getAllowedIPAddress(context);
+        boolean match = false; 
+        for( String address: StringUtils.split(allowedIPAddresses, ",")){
+            if(address.contains("-")){
+                String[] range = address.split("-");
+                if(IPHelper.isValidRange(range[0], range[1], remoteIPAddress)){
+                    match = true; 
+                }
+            }
+            else if(address.contains("/")){
+                if(IPHelper.isValidCIDR(address, remoteIPAddress)){
+                    match = true;  
+                }
+            }else{
+                if(address.equals(remoteIPAddress)){
+                    match=true;
+                };
+            }
+        }
+        if (!match) {
+            logger.infof("IPs do not match. Realm %s expected %s but user %s logged from %s", realm.getName(), allowedIPAddresses, user.getUsername(), remoteIPAddress);
             UserCredentialManager credentialManager = session.userCredentialManager();
 
             if (!credentialManager.isConfiguredFor(realm, user, OTPCredentialModel.TYPE)) {
