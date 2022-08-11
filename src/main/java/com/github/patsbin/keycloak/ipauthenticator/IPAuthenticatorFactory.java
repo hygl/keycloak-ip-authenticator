@@ -57,7 +57,7 @@ public class IPAuthenticatorFactory implements AuthenticatorFactory {
         name.setType(STRING_TYPE);
         name.setName(ALLOWED_IP_ADDRESS_CONFIG);
         name.setLabel("IP Address from which sign ins are allowed");
-        name.setHelpText("Only accepts IP addresses, no CIDR nor masks nor ranges supported");
+        name.setHelpText("Accepts IP Adresses, Ranges and CIDR seperated by ,");
 
         return Collections.singletonList(name);
     }
